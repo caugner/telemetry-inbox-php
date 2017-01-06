@@ -33,6 +33,17 @@ class Repository {
     return $count;
   }
 
+  public function arrays() {
+    foreach ($this->contents() as $content) {
+      try {
+        $array = json_decode($content, true);
+        yield $array;
+      } catch (Exception $e) {
+        // Ignore.
+      }
+    }
+  }
+
   public function objects() {
     foreach ($this->contents() as $content) {
       try {
@@ -46,7 +57,7 @@ class Repository {
 
   public function contents() {
     foreach ($this->files() as $file) {
-      yield file_get_contents($item);
+      yield file_get_contents($file);
     }
   }
 

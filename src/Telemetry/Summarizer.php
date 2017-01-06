@@ -12,7 +12,7 @@ class Summarizer {
   }
 
   public function add($array) {
-    $this->summary = self::summarize($array, $this->summary);
+    self::summarize((array)$array, $this->summary);
   }
 
   public function getSummary() {
@@ -20,67 +20,87 @@ class Summarizer {
   }
 
   private function summarize($array, &$summary, $ignore=[]) {
+      // Count path..
       if (!isset($summary['count'])) {
         $summary['count'] = 1;
       } else {
         $summary['count'] += 1;
       }
+
+      // Add key-value pairs to summary.
       foreach ($array as $key => $value) {
-        if (in_array($key, $ignore)) {
+        if (in_array($key, $this->ignore)) {
+          // Key is on ignore list.
           continue;
         }
+
         if (is_numeric($key) && is_string($value)) {
+          // Item of an array.
           if (!isset($summary['values'])) {
             $summary['values'] = [];
           }
-          if (!isset($summary['values'][$value])) {
-            $summary['values'][$value] = 1;
+          $values = &$summary['values'];
+          if (!isset($values[$value])) {
+            $values[$value] = 1;
           } else {
-            $summary['values'][$value] += 1;
+            $values[$value] += 1;
           }
         } else if (is_array($value)) {
-          if (!isset($summary['children'][$key])) {
-            $summary['children'][$key] = [];
+          if (!isset($summary['children'])) {
+            $summary['children'] = [];
           }
-          $this->summarize($value, $summary['children'][$key]);
+          $children =& $summary['children'];
+          if (!isset($children[$key])) {
+            $children[$key] = [];
+          }
+          $this->summarize((array)$value, $children[$key]);
         } else {
           if (!isset($summary['keys'])) {
             $summary['keys'] = [];
           }
-          if (!isset($summary['keys'][$key])) {
-            $summary['keys'][$key] = [
+          $keys = &$summary['keys'];
+          if (!isset($keys[$key])) {
+            $keys[$key] = [
               'count' => 1
             ];
           } else {
-            $summary['keys'][$key]['count'] += 1;
+            $keys[$key]['count'] += 1;
           }
-          if (is_numeric($value)) {
-            // Min/max erfassen.
-            if (!isset($summary['keys'][$key]['distribution'])) {
-              $summary['keys'][$key]['distribution'] = [
+
+          $current_key = &$keys[$key];
+
+
+          if (is_numeric($value) && !is_string($value)) {
+            // Numeric values => summarize distribution.
+
+            if (!isset($current_key['distribution'])) {
+              $current_key['distribution'] = [
                 'count' => 1,
                 'sum' => $value,
                 'min' => $value,
                 'max' => $value
               ];
             } else {
-              $summary['keys'][$key]['distribution']['count'] += 1;
-              $summary['keys'][$key]['distribution']['sum'] += $value;
-              $summary['keys'][$key]['distribution']['min'] = min($value, $summary['keys'][$key]['distribution']['min']);
-              $summary['keys'][$key]['distribution']['max'] = max($value, $summary['keys'][$key]['distribution']['max']);
+              $distribution = &$current_key['distribution'];
+              $distribution['count'] += 1;
+              $distribution['sum'] += $value;
+              $distribution['min'] = min($value, $distribution['min']);
+              $distribution['max'] = max($value, $distribution['max']);
             }
           } else if (is_string($value)) {
-            if (!isset($summary['keys'][$key]['values'])) {
-              $summary['keys'][$key]['values'] = [];
+            // Non-numeric string values => count values.
+            if (!isset($current_key['values'])) {
+              $current_key['values'] = [];
             }
-            if (!isset($summary['keys'][$key]['values'][$value])) {
-              $summary['keys'][$key]['values'][$value] = 1;
+            $values = &$current_key['values'];
+
+            if (!isset($values[$value])) {
+              $values[$value] = 1;
             } else {
-              $summary['keys'][$key]['values'][$value] += 1;
+              $values[$value] += 1;
             }
           }
         }
       }
-      return $summary;
     }
 }

@@ -25,9 +25,9 @@ class InboxApp extends \Silex\Application {
 
     // Summary.
     $this->get('/summary', function () {
-      $summarizer = new Summarizer();
-      foreach ($this->repo->objects() as $object) {
-        $summarizer->add($object);
+      $summarizer = new Summarizer(['id']);
+      foreach ($this->repo->arrays() as $array) {
+        $summarizer->add($array);
       }
       return $this->json(['summary' => $summarizer->getSummary()]);
     });
