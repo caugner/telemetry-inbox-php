@@ -14,7 +14,7 @@ class InboxApp extends \Silex\Application {
 
     // Index.
     $this->get('/', function() {
-      return $this->index();
+      return trim(`git rev-parse --short --verify HEAD`);
     });
 
     // Count.
@@ -53,14 +53,5 @@ class InboxApp extends \Silex\Application {
         'error' => $e->getMessage()
       ], 500);
     });
-  }
-
-  public function index() {
-    if (is_dir(__DIR__ . '/../.git')) {
-      exec('git rev-parse --short --verify HEAD', $output);
-      return $output[0];
-    } else {
-      return self::VERSION;
-    }
   }
 }
