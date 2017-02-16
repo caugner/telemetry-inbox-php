@@ -38,7 +38,7 @@ class Repository {
       try {
         $array = json_decode($content, true);
         yield $array;
-      } catch (Exception $e) {
+      } catch (\Exception $e) {
         // Ignore.
       }
     }
@@ -49,7 +49,7 @@ class Repository {
       try {
         $object = json_decode($content);
         yield $object;
-      } catch (Exception $e) {
+      } catch (\Exception $e) {
         // Ignore.
       }
     }
@@ -91,7 +91,7 @@ class Repository {
     }
 
     $missing_keys = [];
-    foreach (self::REQUIRED_FIELD as $field) {
+    foreach (self::REQUIRED_FIELDS as $field) {
       if (!isset($json->$field)) {
         $missingKeys[] = $field;
       }
@@ -115,7 +115,10 @@ class Repository {
         throw new RepositoryException('Data already received.', 200);
       }
 
-      file_put_contents($dataset_path, $data);
+      $result = file_put_contents($filepath, $content);
+      if ($result === false) {
+        throw new \Exception();
+      }
     } catch (Exception $e) {
       throw new RepositoryException('Failed to persist data.', 500);
     }

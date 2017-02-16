@@ -32,7 +32,7 @@ class InboxApp extends \Silex\Application {
       return $this->json(['summary' => $summarizer->getSummary()]);
     });
 
-    $this->get('/ping', function(Silex\Application $app) {
+    $this->get('/ping', function() {
       return $this->json([], 204);
     });
 
